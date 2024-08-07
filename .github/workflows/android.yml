@@ -23,14 +23,16 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y wget unzip
         wget -q https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip -O commandlinetools.zip
-        sudo mkdir -p /usr/local/android-sdk
-        sudo unzip -q commandlinetools.zip -d /usr/local/android-sdk
+        sudo mkdir -p /usr/local/android-sdk/cmdline-tools
+        sudo unzip -q commandlinetools.zip -d /usr/local/android-sdk/cmdline-tools
         sudo rm commandlinetools.zip
+        ls -la /usr/local/android-sdk/cmdline-tools
+        ls -la /usr/local/android-sdk/cmdline-tools/cmdline-tools
         echo 'export ANDROID_SDK_ROOT=/usr/local/android-sdk' >> $GITHUB_ENV
-        echo 'export PATH=$PATH:/usr/local/android-sdk/cmdline-tools/bin' >> $GITHUB_ENV
+        echo 'export PATH=$PATH:/usr/local/android-sdk/cmdline-tools/cmdline-tools/bin' >> $GITHUB_ENV
         echo 'export PATH=$PATH:/usr/local/android-sdk/platform-tools' >> $GITHUB_ENV
-        yes | /usr/local/android-sdk/cmdline-tools/bin/sdkmanager --licenses
-        /usr/local/android-sdk/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+        yes | sudo /usr/local/android-sdk/cmdline-tools/cmdline-tools/bin/sdkmanager --licenses
+        sudo /usr/local/android-sdk/cmdline-tools/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
 
     - name: Build with Gradle
       run: ./gradlew clean assembleRelease
