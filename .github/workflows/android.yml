@@ -18,6 +18,11 @@ jobs:
       with:
         java-version: 1.8
 
+    - name: Install Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.20.0'
+
     - name: Download Android SDK
       run: |
         sudo apt-get update
