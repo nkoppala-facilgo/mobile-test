@@ -23,7 +23,7 @@ jobs:
       with:
         node-version: '18.20.0'
 
-    - name: Download Android SDK
+    - name: Download and Extract Android SDK Command-Line Tools
       run: |
         sudo apt-get update
         sudo apt-get install -y wget unzip
@@ -34,14 +34,27 @@ jobs:
         echo 'Listing contents of /usr/local/android-sdk'
         ls -la /usr/local/android-sdk
         echo 'Listing contents of /usr/local/android-sdk/cmdline-tools'
-        ls -la /usr/local/android-sdk/cmdline-tools
-        echo 'Listing contents of /usr/local/android-sdk/cmdline-tools/bin'
-        ls -la /usr/local/android-sdk/cmdline-tools/bin
+        ls -la /usr/local/android-sdk/cmdline-tools || echo "cmdline-tools directory not found"
+
+    - name: Set Up Android SDK
+      run: |
+        echo 'Setting up Android SDK environment'
+        if [ -d /usr/local/android-sdk/cmdline-tools/bin ]; then
+          echo 'cmdline-tools/bin directory found'
+          export ANDROID_SDK_ROOT=/usr/local/android-sdk
+          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
+        elif [ -d /usr/local/android-sdk/cmdline-tools/cmdline-tools/bin ]; then
+          echo 'cmdline-tools/cmdline-tools/bin directory found'
+          export ANDROID_SDK_ROOT=/usr/local/android-sdk
+          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
+        else
+          echo 'cmdline-tools directory structure not recognized'
+          exit 1
+        fi
         echo 'export ANDROID_SDK_ROOT=/usr/local/android-sdk' >> $GITHUB_ENV
-        echo 'export PATH=$PATH:/usr/local/android-sdk/cmdline-tools/bin' >> $GITHUB_ENV
-        echo 'export PATH=$PATH:/usr/local/android-sdk/platform-tools' >> $GITHUB_ENV
-        yes | sudo /usr/local/android-sdk/cmdline-tools/bin/sdkmanager --licenses
-        sudo /usr/local/android-sdk/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+        echo 'export PATH=$PATH' >> $GITHUB_ENV
+        yes | sudo $ANDROID_SDK_ROOT/cmdline-tools/bin/sdkmanager --licenses || yes | sudo $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools/bin/sdkmanager --licenses
+        sudo $ANDROID_SDK_ROOT/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3" || sudo $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
 
     - name: Build with Gradle
       run: ./gradlew clean assembleRelease
